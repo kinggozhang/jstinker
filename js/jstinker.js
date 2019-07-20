@@ -343,11 +343,5 @@ $("document").ready(function() {
         ace.edit("js-editor").getSession().setValue(js2);
     });
 
-    // Together Button
-    $("#btnTogether").click(function(event) {
-      event.preventDefault();
-
-      TogetherJS(this);
-      return false;
-    });
+   
 });
