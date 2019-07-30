@@ -19,6 +19,7 @@
 
     <!-- JSTinker Scripts -->
     <script src="js/jstinker.js"></script>
+    <script src="js/table.js"></script>
     <!-- Bootstrap Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <!-- Bootstrap Optional theme -->
@@ -30,29 +31,8 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 </head>
 <body>
-
-
-    <!-- Sidebar -->
-    <div class="w3-sidebar w3-bar-block w3-collapse" style="width:217px;">
-    <a class="list-group-item list-group-item-success" href="#"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> JSTinker</a>
-    <div class="list-group">
-    <a href="#" class="list-group-item list-group-item-primary"">First item</a>
-    <a href="#" class="list-group-item list-group-item-primary"">Second item</a>
-    <a href="#" class="list-group-item list-group-item-primary"">Third item</a>
-        <a href="#" class="list-group-item list-group-item-primary"">First item</a>
-   
-   
-    <a href="#" class="list-group-item list-group-item-primary"">Second item</a>
-    <a href="#" class="list-group-item list-group-item-primary"">Third item</a>
-        <a href="#" class="list-group-item list-group-item-primary"">First item</a>
-    <a href="#" class="list-group-item list-group-item-primary"">Second item</a>
-    <a href="#" class="list-group-item list-group-item-primary"">Third item</a>
-        <a href="#" class="list-group-item list-group-item-primary"">First item</a>
-    <a href="#" class="list-group-item list-group-item-primary"">Second item</a>
-    <a href="#" class="list-group-item list-group-item-primary"">Third item</a>
-  </div>
     </div><!-- /sidebar -->
-        <nav class="navbar navbar-default" style="margin-left:217px">
+        <nav class="navbar navbar-default">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#toolbar">
@@ -61,7 +41,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> JSTinker</a>
+            <a class="navbar-brand" href="#"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span>Nami </a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -76,43 +56,112 @@
     </nav>
     <div class='editorsContainer'>
     <div class="row">
+        
+        <div class="col-sm-12">
+        <div class="row">
+        <div class="col-sm-8">
+            
+            <div class='desc'>
+            <h2>this is title</h2>
+            <p>this is content </p>
+            <p> this is example</p>
+            <div class='detail'></div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <button type="button" onclick="onClickTry()" class="btn btn-primary">挑战</button>
+            <button type="button" class="btn btn-primary">Next</button>
+        </div>
+        </div>
+  <ul id='tabheader' class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#home">解决方案</a></li>
+    <li><a data-toggle="tab" href="#menu1">讨论</a></li>
+  </ul>
+
+  <div id='tabcontent' class="tab-content">
+    <div id="home" class="tab-pane fade in active">
+      <h3>HOME</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    </div>
+    <div id="menu1" class="tab-pane fade">
+      <h3>Menu 1</h3>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    </div>
+  </div>
+
+
+          
+        </div>
+ 
+        
+    </div>
+<div id='codeeditor' class="row" style='display:none'>
         <div class="col-sm-6">
             <!-- HTML Editor -->
-            <div class="editorContainer" style="position: relative;">
+            <div  class="editorContainer" style="position: relative;">
                 <div class="editor" id="html-editor"></div>
-                <h1 class='bgmark'>HTML</h1>
+                <h1 class='bgmark'>Code</h1>
             </div>
-        </div>
-        <div class="col-sm-6">
+        </div>            
+       <div class="col-sm-6">
         <!-- CSS EDitor -->
             <div class="editorContainer">
-                <div class="editor" id="css-editor"></div>
-                <h1 class='bgmark'>CSS</h1>
+                <div class="editor" id="logger"></div>
+                <h1 class='bgmark'>Log</h1>
             </div>
         </div>
-    </div>
-     <div class="row">
-        <div class="col-sm-6">
-            <!-- JS Editor -->
-            <div class="editorContainer">
-                <div class="editor" id="js-editor"></div>
-                <h1 class='bgmark'>JS</h1>
-            </div>
-
+        <div >
+        <button type="button" onclick="onClickRun()" class="btn btn-primary">运行</button>
+        <button type="button" onclick="onClickSubmit()" class="btn btn-primary">提交答案</button>
         </div>
-        <div class="col-sm-6">
-            <!-- Preview -->
-            <div class="editorContainer">
-                <iframe class="editor" id="preview" name="result" sandbox="allow-forms allow-popups allow-scripts allow-same-origin" frameborder="0">
-                    #document
-                </iframe>
-            </div>
-        </div>
-    </div>
-
+</div>        
     </div>
     <!-- Set Editor Modes -->
     <script>
+    let funtemplate = 'test';
+    let tc1 = 'test(1,2) === 2';
+    let tc2 = 'test(2,3) === 6';
+    function onClickTry()
+    {
+        ele('tabheader').style.display='none';
+        ele('tabcontent').style.display='none';
+        ele('codeeditor').style.display='block';
+    }
+    function namilogger(log)
+    {
+       ele('logger').innerHTML += log + '\n';
+    }
+    function onClickRun()
+    {
+    var script = ace.edit("html-editor").getSession().getValue();
+    let r1=false;
+    let r2 = false;
+    let r3 = false;
+    script += 'r1 = ('+tc1 + ');\n';
+    script += 'r2 = ('+tc2 + ');\n';
+    try{
+      namilogger(script);
+      eval(script.replace('console.log', 'namilogger'));
+    }
+    catch(e)
+    {
+       namilogger(e);
+    }
+ 
+    namilogger('Test case1 '+ r1);
+    
+    namilogger('Test case2 '+ r2);
+    }
+    function runTestCase(tc)
+    {
+       let result = false;
+       eval('result = ('+tc+')');
+       return result;
+    }
+    function onClickSubmit()
+    {
+    
+    }    
         ace.require("ace/ext/language_tools");
 
         var htmlEditor = ace.edit("html-editor");
