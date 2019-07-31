@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<title>注册</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="./css/w3.css">
+<script src="./js/av-min-3.0.4.js"></script>
+<script src="./js/table.js"></script>
+<script>
+initialize('hqD9IMTNsFSk2LxbiFnBEvCp-gzGzoHsz','ITs4Ni1EiEI5sEcQQ4CBJqpb');
+
+
+function showErrors(message)
+{
+ele("errormsg").innerHTML = message;
+}
+function regUser(e)
+{
+
+  if(ele("name").value == "" || ele("password").value == "")
+  {
+     showErrors("用户名/密码不能为空");
+	 return;
+  }
+  if(e)
+  {
+      e.innerText = "正在注册...";
+      e.disabled = true;
+  }
+  
+  // 新建 AVUser 对象实例
+  var user = new AV.User();
+  // 设置用户名
+  user.setUsername(ele("name").value);
+  // 设置密码
+  user.setPassword(ele("password").value);
+  // 设置邮箱
+  user.setEmail(ele("email").value);
+  //user.setMobilePhoneNumber(ele("name").value);
+  user.signUp().then(function (loggedInUser) {
+      console.log(loggedInUser);
+	  window.location.href="login.html";
+  }, function (error) {
+  if(e)
+  {
+      e.innerText = "注册";
+      e.disabled = false;
+  }
+  showErrors(error.message);
+  });
+}
+
+</script>
+<body>
+<div style="display:none;"><img src="./img/man2.jpg" alt=""></div>
+<div class="w3-content w3-card-2">
+<header class="w3-blue">
+  <h1 class="w3-center">用户注册</h1>
+</header>
+<div class="w3-container w3-half w3-margin-top">
+<img class="w3-image" src="./img/man2.jpg">
+</div>
+<div class="w3-container w3-half w3-margin-top">
+
+<p>
+<label>Name:</label>
+<input id="name" class="w3-input" type="text" style="width:90%" required>
+</p>
+<p>
+<label>Password:</label>
+<input id="password" class="w3-input" type="password" style="width:90%" required>
+</p>
+<p>
+<label>Email:</label>
+<input id="email" class="w3-input" type="text" style="width:90%" required>
+</p>
+
+
+<p class="login">
+<button class="w3-button w3-section w3-teal w3-ripple" onclick="regUser(this)"> 注册 </button>
+<a href="login.html">登录</a>
+</p>
+<p class="w3-text-red" id="errormsg">
+
+</p>
+</div>
+</div>
+
+</body>
+</html> 

@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html>
+<title>SLadmin内容管理系统</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./css/w3.css">
+<script src="./js/av-min-3.0.4.js"></script>
+<script src="./js/table.js"></script>
+
+<style>
+html, body, h1, h2, h3, h4, h5 {font-family: "Open Sans", sans-serif}
+</style>
+
+<body>
+
+<!-- Navbar -->
+<div class="w3-top">
+ <div class="w3-bar w3-blue w3-left-align w3-large">
+
+  <a href="http://www.sumoon.com" class="w3-bar-item w3-button w3-padding-large w3-indigo"><i class="fa fa-home w3-margin-right"></i>日月明</a>
+
+
+ </div>
+</div>
+
+
+<!-- Page Container -->
+<div class="w3-container w3-content" style="max-width:1400px;margin-top:80px">    
+  <!-- The Grid -->
+  <div class="w3-row">
+    <!-- Left Column -->
+    <div class="w3-col m2">
+      <!-- Profile -->
+      <div id="myprofile" class="w3-card w3-round w3-white">
+
+      </div>
+      <br>
+      
+       <div class="w3-bar-block w3-card">
+  
+  <!-- <a href="usermain.html?type=myfeeds" id="myfeedssidelink"  class="w3-bar-item w3-button tablink">我的动态</a> -->
+  <a href="editpost.html" class="w3-bar-item w3-button w3-green tablink">新建文章</a>
+  
+        </div>
+
+
+    
+    <!-- End Left Column -->
+    </div>
+    
+    <!-- Middle Column -->
+    <div class="w3-col m8">
+    
+      <div id="tabbars"  class="w3-bar">
+    <!--  <button class="w3-bar-item w3-button tablink w3-red" onclick="openTabs(event,'myfeeds')">我的动态</button>  -->
+    <button class="w3-bar-item w3-button tablink w3-red" onclick="openTabs(event,'mygroups')">动态文章</button>
+    <button class="w3-bar-item w3-button tablink" onclick="openTabs(event,'mycards')">静态化文章</button>
+      </div>
+     
+      <div id="mygroups" class="w3-container w3-border tab">
+<h3>动态化文章列表</h3>
+      </div>
+
+      <div id="mycards" class="w3-container w3-border tab" style="display:none">
+<h3>静态化文章列表</h3>
+      </div>
+
+      
+      
+    <!-- End Middle Column -->
+    </div>
+    
+    <!-- Right Column -->
+    <div class="w3-col m2">
+      <div class="w3-card w3-round w3-white w3-center">
+	    <h4 class="w3-blue"> 操作事件 </h4>
+        <div id="requestResult" class="w3-container" style="height: 600px;overflow: auto;">
+		
+        </div>
+      </div>
+      <br>
+      
+      
+      <br>
+      <!--
+      <div class="w3-card w3-round w3-white w3-padding-32 w3-center">
+        <p><i class="fa fa-bug w3-xxlarge"></i></p>
+      </div>
+      -->
+    <!-- End Right Column -->
+    </div>
+    
+  <!-- End Grid -->
+  </div>
+  
+<!-- End Page Container -->
+</div>
+<br>
+
+<!-- Footer -->
+<footer class="w3-container w3-theme-d3 w3-padding-16">
+  <h5>Footer</h5>
+</footer>
+
+
+<script src="./js/table.js"></script>
+<script>
+// Accordion
+function myFunction(id) {
+  var x = document.getElementById(id);
+  if (x.className.indexOf("w3-show") == -1) {
+    x.className += " w3-show";
+    x.previousElementSibling.className += " w3-theme-d1";
+  } else { 
+    x.className = x.className.replace("w3-show", "");
+    x.previousElementSibling.className = 
+    x.previousElementSibling.className.replace(" w3-theme-d1", "");
+  }
+}
+
+// Used to toggle the menu on smaller screens when clicking on the menu button
+function openNav() {
+  var x = document.getElementById("navDemo");
+  if (x.className.indexOf("w3-show") == -1) {
+    x.className += " w3-show";
+  } else { 
+    x.className = x.className.replace(" w3-show", "");
+  }
+}
+
+initialize('rQJs4tIvgHSWk42RA1RL3rp-gzGzoHsz','WBa7JPv0mzaR7raBBCTRX8l');
+const POSTS = "POSTS";
+
+
+if(!currentUser())
+{
+   window.location.href="login.html";
+}
+else
+{
+	showMyProfile(currentUser());
+
+    var onQueryPostError=function(tablename, error)
+	{
+	   alert("查询文章失败" + error.message);
+	};
+	var onQueryPostResult=function(tablename, results)
+	{
+	   console.log(tablename);
+	   console.log(results);
+       showAllGroupsInHeader(results);
+        
+	}
+	console.log(AV.User.current());
+    //find all groups
+	var rid = findItemsEqualTo(POSTS, "author", currentUser().getUsername(), onQueryPostResult,onQueryPostError);
+    appendRequest(rid, "更新文章信息");
+	
+}
+
+function showMyProfile(obj)
+{
+    	var dd = ele("myprofile");
+		var html ="";
+        html += '<div class="w3-container"><h2>';
+        html += obj.getUsername();
+        html += '</h2><p>';
+        html += obj.getEmail();
+        html += '</p><p>';
+        html += obj.getMobilePhoneNumber();
+        html += '</p></div>';
+		
+		dd.innerHTML = html;
+}
+
+
+function removePost(pid)
+{
+    var r = confirm("Remove post ? ")
+    if(r)
+    {    
+    let rid=removeTableItem(POSTS, pid, 
+                            function(suc)
+                            {
+                            console.log("removed post "+pid);
+							
+                            let rid3 = findItemsEqualTo(POSTS, "ownerid", currentUser().id, onQueryPostResult, onQueryPostError);
+                            appendRequest(rid3, "更新文章信息");
+                            
+                            },
+                            function(err)
+                            {
+                            
+                            console.log("error remove post"+gid);
+                            }
+                            );
+                            
+    appendRequest(rid,"删除文章");
+    }
+}
+
+
+function showAllGroupsInHeader(results)
+{
+
+  
+	var dd = ele("mygroups");
+	var html ="";
+	
+	var statichtml = "";
+	for(var i=0;i<results.length;i++)
+	{
+		//g_groups[results[i].id]=results[i];
+		if(results[i].get("mode") == "dynamic")
+		{
+		html += '<div class="w3-container w3-card w3-round w3-margin">'
+
+		html += '<header class="w3-container"><h3>';
+		html += results[i].get("title");
+		html += '</h3></header><a href="editpost.html?postid=';
+		html += results[i].id;
+		html += '" class="w3-button w3-green">修改</a><button onclick=removePost("';
+		html += results[i].id;
+		html += '") class="w3-right w3-red w3-button">删除</button></div>';
+		
+		}
+		else if(results[i].get("mode") == "static")
+		{
+		statichtml += '<div class="w3-container w3-card w3-round w3-margin">'
+
+		statichtml += '<header class="w3-container"><h3>';
+		statichtml += results[i].get("title");
+		statichtml += '</h3></header><button onclick=removePost("';
+		statichtml += results[i].id;
+		statichtml += '") class="w3-right w3-red w3-button">删除</button></div>';
+		}
+	}
+	
+	if(html === "")
+	{
+	html += '<div class="w3-container w3-card w3-round w3-margin"><h3>快来创建文章吧！</h3>';        
+	}
+	ele("mycards").innerHTML = statichtml;
+	dd.innerHTML = html;
+
+}
+
+function clickGroupDropdown() {
+  var x = document.getElementById("groupdropdown");
+  if (x.className.indexOf("w3-show") == -1) {  
+    x.className += " w3-show";
+  } else { 
+    x.className = x.className.replace(" w3-show", "");
+  }
+}
+
+function openTabs(evt, tabName) {
+  var i, x, tablinks;
+  x = document.getElementsByClassName("tab");
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablink");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" w3-red", "");
+  }
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.className += " w3-red";
+}
+</script>
+
+</body>
+</html> 

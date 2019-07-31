@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<title>用户登录</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./css/w3.css">
+<script src="./js/av-min-3.0.4.js"></script>
+<script src="./js/table.js"></script>
+<script>
+initialize('hqD9IMTNsFSk2LxbiFnBEvCp-gzGzoHsz','ITs4Ni1EiEI5sEcQQ4CBJqpb');
+
+function sendSMS()
+{
+AV.Cloud.requestSmsCode('18939895003').then(function (success) {
+   console.log("sendSMS ok");
+  }, function (error) {
+  
+  console.log("sendSMS error:" + error.message);
+  });
+}
+function verifySMS()
+{
+  AV.User.signUpOrlogInWithMobilePhone('18939895003', '123456').then(function (success) {
+    // 成功
+  }, function (error) {
+    // 失败
+  });
+}
+function showErrors(message)
+{
+ele("errormsg").innerHTML = message;
+}
+function login(e)
+{
+  if(ele("name").value == "" || ele("password").value == "")
+  {
+     showErrors("用户名/密码不能为空");
+	 return;
+  }
+  e = e||window.event;
+  e.innerText = "正在登陆...";
+  e.disabled = true;
+  var username = ele("name").value;
+  var password = ele("password").value;
+  AV.User.logIn(username, password).then(function (loginedUser) {
+    console.log("login success");
+	window.location.href="index.html";
+  }, function (error) {
+    e.innerText = "登陆";
+    e.disabled = false;
+    showErrors(error.message);
+  });
+}
+</script>
+<body>
+
+<div class="w3-content w3-card-2">
+<div style="display:none;"><img src="./img/man2.jpg" alt=""></div>
+
+
+<div class="w3-container w3-half w3-margin-top">
+<img class="w3-image" src="./img/man1.jpg">
+</div>
+<div class="w3-container w3-half w3-margin-top">
+<h3 class="w3-blue w3-bottombar">用户登录</h3>
+<p>
+<label>Name:</label>
+<input  id="name" class="w3-input" type="text" style="width:90%" required>
+</p>
+<p>
+<label>Password:</label>
+<input  id="password" class="w3-input" type="password" style="width:90%" required>
+</p>
+
+
+
+<p class="login">
+<button class="w3-button w3-section w3-teal w3-ripple" onclick="login(this)">登录</button>
+<a href="./signup.html">注册</a>
+</p>
+<p class="w3-text-red" id="errormsg">
+
+</p>
+
+</div>
+</div>
+</body>
+</html> 
