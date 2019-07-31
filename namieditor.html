@@ -6,9 +6,11 @@
     
     <!-- Latest jQuery from Google CDN -->
     <script src="https://cdn.staticfile.org/jquery/2.1.3/jquery.min.js"></script>
-    <!-- Crypto JS -->
+    <!-- Crypto 
     <script src="https://cdn.staticfile.org/crypto-js/3.1.2/components/crypto-js.min.js"></script>
     <script src="https://cdn.staticfile.org/crypto-js/3.1.2/components/aes.js"></script>
+    
+    JS -->
     <!-- Beautify Web - HTML, CSS, JS -->
     <script src="js/beautify-web/beautify-html.js"></script>
     <script src="js/beautify-web/beautify-css.js"></script>
@@ -31,7 +33,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
 </head>
 <body>
-    </div><!-- /sidebar -->
+    <div id='chID'>dsfasfasdfsdfsdf</div>
         <nav class="navbar navbar-default">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
@@ -95,7 +97,8 @@
  
         
     </div>
-<div id='codeeditor' class="row" style='display:none'>
+<div id='codeeditor'  style='display:none'>
+<div class='row'>
         <div class="col-sm-6">
             <!-- HTML Editor -->
             <div  class="editorContainer" style="position: relative;">
@@ -110,7 +113,8 @@
                 <h1 class='bgmark'>Log</h1>
             </div>
         </div>
-        <div >
+</div>
+        <div>
         <button type="button" onclick="onClickRun()" class="btn btn-primary">运行</button>
         <button type="button" onclick="onClickSubmit()" class="btn btn-primary">提交答案</button>
         </div>
@@ -129,7 +133,7 @@
     }
     function namilogger(log)
     {
-       ele('logger').innerHTML += log + '\n';
+       ele('logger').innerHTML += log + '<br>';
     }
     function onClickRun()
     {
