@@ -22,6 +22,12 @@ width:100px;
 .imgview > li:hover{
  border: 2px solid red;
 }
+
+.TAInput {
+    width: 100%;
+    overflow: auto;
+    word-break: break-all; //解决兼容问题
+}
 </style>
 
 <body>
@@ -38,7 +44,16 @@ width:100px;
 	<input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="输入标题" id="title" required>
 	<input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="永久链接" id="permlink" required>
 	<input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="输入标签。多个标签使用|间隔" id="tags" required>
-	<input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="输入目录。多个目录使用|间隔" id="cates" required>
+	<input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="输入目录。多个目录使用|间隔" id="cates" required>    
+    <input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="函数名模板" id="funname" required>
+    <p>Desc</p>
+    <div>
+	<textarea class="TAInput" id="desc"></textarea>
+	</div>
+    <p>TCs</p>
+    <div>
+	<textarea   class="TAInput" id="tcs"></textarea>
+	</div>   
     <div>
 	<ul class="imgview" id="imgViewer"></ul>
 	<div class="w3-row">
@@ -52,9 +67,6 @@ width:100px;
 	<div class="w3-col l2">
 	<p id='indi'></p>
 	</div>
-	</div>
-	<div>
-	<textarea id="mdcontent"></textarea>
 	</div>
 	<div class="w3-container">
 	  <button class="w3-button w3-green w3-section w3-padding" id="addpostbtn" onclick="onAddPost(this)">确定</button>
@@ -70,13 +82,9 @@ width:100px;
 <script src="./js/av-min-3.0.4.js"></script>
 <script src="./js/table.js"></script>
 <script>
-	var simplemde = new SimpleMDE({
-		element: document.getElementById("mdcontent"),
-		spellChecker: false,
-	});
-	//SimpleMDE.toggleSideBySide();
+
 initialize('hqD9IMTNsFSk2LxbiFnBEvCp-gzGzoHsz','ITs4Ni1EiEI5sEcQQ4CBJqpb');
-const POSTS = "POSTS";
+const POSTS = "CHALLENGES";
 const FILES = "_File";
 
 var g_postid = getParameter("postid");
@@ -156,7 +164,7 @@ function  fetchPost(postid)
 		  {
 		  });
 }
-function updatePost(postid,title,permlink,tags,cates,content)
+function updatePost(postid,title,permlink,tags,cates,funname, desc,tcs)
 {
     var updateData={};
     if(title != g_postobj.get("title"))
@@ -167,9 +175,13 @@ function updatePost(postid,title,permlink,tags,cates,content)
         updateData["cates"]=cates;
     if(permlink != g_postobj.get("permlink"))
         updateData["permlink"]=permlink;
-	if(content != g_postobj.get("mdcontent"))
-        updateData["mdcontent"]=content;
-		
+	if(funname != g_postobj.get("funname"))
+        updateData["funname"]=funname;
+	if(desc != g_postobj.get("desc"))
+        updateData["desc"]=desc;
+ 	if(tcs != g_postobj.get("tcs"))
+        updateData["tcs"]=tcs;
+        
 	updateTableItem(POSTS,postid, updateData, 
 			function(tablename, obj)
 			{
@@ -184,20 +196,20 @@ function onAddPost(e)
 {
 	if(!ele("title").value)
 	   return;
-	var ta = ele("mdcontent");
+	
 
 	if(g_postid)
 	{   
-	updatePost(g_postid,ele("title").value, ele("permlink").value, ele("tags").value, ele("cates").value,simplemde.value());
+	updatePost(g_postid,ele("title").value, ele("permlink").value, ele("tags").value, ele("cates").value,);
 	}
 	else
     {   
-	addNewPost(ele("title").value, ele("permlink").value, currentUser().getUsername(), ele("tags").value, ele("cates").value,simplemde.value());
+	addNewPost(ele("title").value, ele("permlink").value, currentUser().getUsername(), ele("tags").value, ele("cates").value,ele("funname").value, ele('desc').value, ele('tcs').value);
 	}
 }
-function addNewPost(title,permlink, author,tags,cates, content)
+function addNewPost(title,permlink, author,tags,cates, funname, desc,tcs)
 {
-  var data= {"title":title,"permlink":permlink, "author":author, "tags":tags, "cates":cates, "mdcontent":content, "mode":"dynamic"};
+  var data= {"title":title,"permlink":permlink, "author":author, "tags":tags, "cates":cates, "funname":funname, "desc":desc, 'tcs':tcs, "mode":"dynamic"};
   createTableItem(POSTS, data, 
 				function(table, obj)
 				{
@@ -206,7 +218,9 @@ function addNewPost(title,permlink, author,tags,cates, content)
 					ele("permlink").value="";
 					ele("tags").value="";
 					ele("cates").value="";
-					ele("mdcontent").value="";
+					ele("desc").value="";
+                    ele("funname").value="";
+                    ele("tcs").value="";
 				},
 				function(table, error)
 				{
