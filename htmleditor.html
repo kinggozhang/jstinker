@@ -28,6 +28,9 @@
     <link rel="stylesheet" href="css/w3.css" type="text/css">
     <!-- Bootstrap Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    
+    <script src="./js/av-min-3.0.4.js"></script>
+    <script src="./js/table.js"></script>    
 </head>
 <body>
 
@@ -60,9 +63,7 @@
         <div class="col-sm-6">
             <!-- HTML Editor -->
             <div class="editorContainer" style="position: relative;">
-                <div class="halfeditor" id="html-editor">
-
-                </div>
+                <div class="halfeditor" id="html-editor"></div>
                 <h1 class='bgmark'>HTML</h1>
             </div>
         </div>
@@ -79,6 +80,9 @@
     </div>
     <!-- Set Editor Modes -->
     <script>
+  initialize('hqD9IMTNsFSk2LxbiFnBEvCp-gzGzoHsz','ITs4Ni1EiEI5sEcQQ4CBJqpb');
+  const CODES = "CODES";  
+    
         ace.require("ace/ext/language_tools");
 
         var htmlEditor = ace.edit("html-editor");
@@ -87,9 +91,20 @@
         htmlEditor.setOptions({
             enableBasicAutocompletion: true
         });
-        var htmlvalue = '<!DOCTYPE html>';
-htmlvalue +='<html><head><title>Page Title</title></head><body><h1>My First Heading</h1><p>My first paragraph.</p></body></html>'; 
-        htmlEditor.setValue(htmlvalue);
+         var htmlvalue="";
+findItemsEqualTo(CODES, 'title', 'h1', 
+            function(table, results)
+            {         
+             if(results.length > 0)
+             {
+                htmlEditor.setValue(results[0].get("codes"));
+             }
+            },
+            function(table, obj,error)
+            {
+            alert("发生错误：" + error.message);
+            });
+        
    // RUN Button
     $("#btnRun2").click(function(event) {  
         event.preventDefault();
