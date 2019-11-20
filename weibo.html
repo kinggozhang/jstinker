@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head id="hdtest">
     <meta charset="UTF-8">
-    <title>问答</title>
+    <title>{{hd}}</title>
     <link rel="stylesheet" href="./css/w3.css" type="text/css">
     <script src="./js/vue.min.js"></script>
     <script src="./js/av-min-3.0.4.js"></script>
@@ -39,7 +39,7 @@
     </div>
 
     <footer class="w3-container w3-teal">
-     <button class="w3-button w3-round w3-blue" v-on:click="likePost(id)">{{likes}}赞</button>
+     <button class="w3-button w3-round w3-blue" v-on:click="likePost(id)">{{likes}}{{i18nv.zan}}</button>
     </footer>
 
   </div>
@@ -52,8 +52,25 @@
       props: ['wditem','wid'],
       template: '<div class="w3-container w3-card w3-white w3-round w3-margin"><h1>{{wditem.wen}}</h1><hr class="w3-clear"><p v-html="wditem.da"></p><span v-for="tag in wditem.tags" class="w3-button w3-tag w3-blue" onclick="showTag(this)" style="margin-right: 10px;">{{tag}}</span><button type="button" class="w3-button w3-margin-bottom w3-orange w3-right" onclick="likePost(this)"><i class="w3-hide">{{wditem.id}}</i>{{wditem.likes}}赞</button></div>'
     });
+    let i18nv = new Vue({
+        data: {
+            zan:'赞' 
+        }
+    });
+    let hv = new Vue({
 
+        el: '#hdtest',
+        data: {
+            hd: 'fromV'
+        }
+    });
 
+    console.log(hv.$data.hd);
+    for(key in hv.$data)
+    {
+        console.log(key);
+        console.log(hv.$data[key]);
+    }
     let cv = new Vue({
         el: '#wdcontent',
         data: {
@@ -235,6 +252,15 @@
             if(idx >= 0)
             {
                 cv.wds[idx].likes ++;
+            }
+            if(pid == modalv.id)
+            {
+                modalv.likes ++;
+            }
+            idx = hotv.hotsmap[pid]
+            if(idx >=0)
+            {
+                hotv.hots[idx].likes ++;
             }
         });
     }
