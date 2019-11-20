@@ -10,17 +10,47 @@
 </head>
 <body>
 
-    <div id="wdcontent" class="w3-container w3-content">
-    <wd v-for="item in wds" v-bind:wditem="item" v-bind:wid="item.id"></wd>
+    <div  class="w3-container w3-content" style="max-width: 1400px">
+        <div class="w3-row">
+            <div id="wdhots" class="w3-third">
+                <button class="w3-round w3-button w3-blue" v-show="curTag.length>0"
+                    onclick="showLatest()">{{curTag}} &times;</button>
+                <ul class="w3-card w3-ul w3-margin">
+                    <li class="w3-center w3-green"><b>热度</b></li>
+                    <li class="w3-block w3-button" v-for="item in hots" v-on:click="showHotPost(item.id)">{{item.wen}}</li>
+                </ul>
+            </div>            
+            <div id="wdcontent" class="w3-twothird">
+            <wd v-for="item in wds" v-bind:wditem="item" v-bind:wid="item.id"></wd>
+            </div>
+
+        </div>
+    </div>
+<div id="wdmodal" class="w3-modal">
+  <div class="w3-modal-content">
+
+    <header class="w3-container w3-teal"> 
+      <span onclick="document.getElementById('wdmodal').style.display='none'" 
+      class="w3-button w3-display-topright">&times;</span>
+      <h2>{{wen}}</h2>
+    </header>
+
+    <div class="w3-container" v-html="da">
     </div>
 
+    <footer class="w3-container w3-teal">
+     <button class="w3-button w3-round w3-blue" v-on:click="likePost(id)">{{likes}}赞</button>
+    </footer>
+
+  </div>
+</div>
 
     <!-- Set Editor Modes -->
     <script>
     const POSTS = "wenda";
     Vue.component('wd', {
       props: ['wditem','wid'],
-      template: '<div class="w3-container w3-card w3-white w3-round w3-margin"><h1>{{wditem.wen}}</h1><hr class="w3-clear"><p v-html="wditem.da"></p><button type="button" class="w3-button w3-margin-bottom w3-blue" onclick="likePost(this)"><i class="w3-hide">{{wditem.id}}</i>{{wditem.likes}}赞</button></div>'
+      template: '<div class="w3-container w3-card w3-white w3-round w3-margin"><h1>{{wditem.wen}}</h1><hr class="w3-clear"><p v-html="wditem.da"></p><span v-for="tag in wditem.tags" class="w3-button w3-tag w3-blue" onclick="showTag(this)" style="margin-right: 10px;">{{tag}}</span><button type="button" class="w3-button w3-margin-bottom w3-orange w3-right" onclick="likePost(this)"><i class="w3-hide">{{wditem.id}}</i>{{wditem.likes}}赞</button></div>'
     });
 
 
@@ -31,32 +61,52 @@
             wdsmap: {}
         }
     });
-    initialize('rQJs4tIvgHSWk42RA1RL3rp-gzGzoHsz','WBa7JPv0mzaR7raBBCTRX8l');
-    //get latest 100;
-    findItemsEqualTo(POSTS, 'author', 'admin', function(tname, results)
-    {
-        for(r in results)
+    let hotv = new Vue({
+        el: '#wdhots',
+        data: {
+            curTag: '',
+            hots: [],
+            hotsmap: {} 
+        },
+        methods:
         {
-            let wd={};
-            wd.wen = results[r].get('title');
-            wd.da = encodeMD(results[r].get('mdcontent'));
-
-            wd.id = results[r].id;
-            wd.likes = results[r].get('likes');
-
-            cv.wdsmap[wd.id] = cv.wds.length;
-            cv.wds.push(wd);
+            showHotPost: function (id)
+            {
+                let idx = this.hotsmap[id];
+                if(idx >= 0)
+                {
+                    modalv.wen = this.hots[idx].wen;
+                    modalv.da = this.hots[idx].da;
+                    modalv.likes = this.hots[idx].likes;
+                    modalv.id = this.hots[idx].id;
+                    ele('wdmodal').style.display = 'block';
+                }
+            }
         }
-    },
-    function(tname, error)
-    {
-        let wd={};
-        wd.wen="error";
-        wd.da=''+error;
-        cv.wds.push(wd);
+    });
+       
+    let modalv = new Vue({
+        el: '#wdmodal',
+        data: {
+            wen:'',
+            da: '',
+            likes: 0,
+            id: ''
+        },
+        methods:
+        {
+            likePost: function(id)
+            {
+                likePostById(id);
+            }
+        }
+    });
+    initialize('rQJs4tIvgHSWk42RA1RL3rp-gzGzoHsz','WBa7JPv0mzaR7raBBCTRX8l');
+ 
+    showLatest();
+    showHotList();
 
-    }
-    );
+
     function encodeMD(md)
     {
         let mdlines =md.split('\n');
@@ -86,9 +136,98 @@
         return newstr;
 
     }
-    function likePost(e)
+    function showHotList()
     {
-        let pid = e.children[0].innerHTML;
+        //find hot list;
+        var query = new AV.Query(POSTS);
+        query.descending('likes');
+        query.limit(20);
+        findItemsByQuery(POSTS, query, function(tname, results)
+        {
+            for(r in results)
+            {
+                let wd={};
+                wd.wen = results[r].get('title');
+                wd.likes = results[r].get('likes');
+                wd.id = results[r].id;
+                wd.da = encodeMD(results[r].get('mdcontent'));
+                hotv.hotsmap[wd.id] = hotv.hots.length;
+                hotv.hots.push(wd);
+            }
+        },
+        function(tname, err)
+        {
+
+        },['title','likes','mdcontent']);        
+    }
+    function showLatest()
+    {
+           //get latest 100;
+        findItemsEqualTo(POSTS, 'author', 'admin', function(tname, results)
+        {
+            cv.wds=[];
+            cv.wdsmap={};
+            hotv.curTag='';
+            for(r in results)
+            {
+                let wd={};
+                wd.wen = results[r].get('title');
+                wd.da = encodeMD(results[r].get('mdcontent'));
+
+                wd.id = results[r].id;
+                wd.likes = results[r].get('likes');
+                let tags = results[r].get('tags');
+                if(tags && tags.length)
+                {
+                    wd.tags = tags.split('|');
+                }
+                cv.wdsmap[wd.id] = cv.wds.length;
+                cv.wds.push(wd);
+            }
+        },
+        function(tname, error)
+        {
+            let wd={};
+            wd.wen="error";
+            wd.da=''+error;
+            cv.wds.push(wd);
+
+        }
+        );
+    }
+    function showTag(e)
+    {
+        let tag = e.innerHTML;
+        if(tag.length > 0)
+        {
+            hotv.curTag = tag;
+            var query = new AV.Query(POSTS);
+            query.contains('tags', tag);
+
+            findItemsByQuery(POSTS, query, function(tname, results)
+            {
+                cv.wdsmap={};
+                cv.wds=[];
+                for(r in results)
+                {
+                    let wd={};
+                    wd.wen = results[r].get('title');
+                    wd.likes = results[r].get('likes');
+                    wd.id = results[r].id;
+                    wd.da = encodeMD(results[r].get('mdcontent'));
+                    wd.tags = results[r].get('tags').split('|');
+                    cv.wdsmap[wd.id] = cv.wds.length;
+                    cv.wds.push(wd);
+                }
+            },
+            function(tname, err)
+            {
+
+            },['title','likes','mdcontent','tags']);            
+        }
+    }
+    function likePostById(pid)
+    {
         increTableItem(POSTS, pid, 'likes', 1, function(obj)
         {
             console.log('increased likes:' + pid);
@@ -99,6 +238,12 @@
             }
         });
     }
+    function likePost(e)
+    {
+        let pid = e.children[0].innerHTML;
+        likePostById(pid);
+    }
+
     </script>
     
 </body>

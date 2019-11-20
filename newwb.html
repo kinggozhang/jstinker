@@ -188,7 +188,7 @@ function onAddPost(e)
 }
 function addNewPost(title,permlink, author,tags,cates, content)
 {
-  var data= {"title":title,"permlink":permlink, "author":author, "tags":tags, "cates":cates, "mdcontent":content, "mode":"dynamic"};
+  var data= {"title":title,"permlink":permlink, "author":author, "tags":tags, "mdcontent":content, "mode":"dynamic"};
   createTableItem(POSTS, data, 
 				function(table, obj)
 				{
@@ -196,7 +196,7 @@ function addNewPost(title,permlink, author,tags,cates, content)
 					ele("title").value="";
 					ele("permlink").value="";
 					ele("tags").value="";
-					ele("cates").value="";
+//					ele("cates").value="";
 					ele("mdcontent").value="";
 				},
 				function(table, error)
