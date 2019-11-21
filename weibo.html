@@ -5,23 +5,30 @@
     <title>{{hd}}</title>
     <link rel="stylesheet" href="./css/w3.css" type="text/css">
     <script src="./js/vue.min.js"></script>
-    <script src="./js/av-min-3.0.4.js"></script>
+    <script src="./js/av-min-3.15.0.js"></script>
     <script src="./js/table.js"></script>
+<style>
+
+</style>
 </head>
 <body>
 
     <div  class="w3-container w3-content" style="max-width: 1400px">
+        
         <div class="w3-row">
             <div id="wdhots" class="w3-third">
+
                 <button class="w3-round w3-button w3-blue" v-show="curTag.length>0"
                     onclick="showLatest()">{{curTag}} &times;</button>
-                <ul class="w3-card w3-ul w3-margin">
+                <div class="loader" v-show="loading"></div>
+                <ul class="w3-card w3-ul w3-margin" v-show="!loading">
                     <li class="w3-center w3-green"><b>热度</b></li>
                     <li class="w3-block w3-button" v-for="item in hots" v-on:click="showHotPost(item.id)">{{item.wen}}</li>
                 </ul>
             </div>            
             <div id="wdcontent" class="w3-twothird">
-            <wd v-for="item in wds" v-bind:wditem="item" v-bind:wid="item.id"></wd>
+                <div class="w3-center loader" v-show="loading"></div>
+                <wd v-for="item in wds" v-bind:wditem="item" v-bind:wid="item.id"></wd>
             </div>
 
         </div>
@@ -57,6 +64,7 @@
             zan:'赞' 
         }
     });
+
     let hv = new Vue({
 
         el: '#hdtest',
@@ -75,7 +83,8 @@
         el: '#wdcontent',
         data: {
             wds: [],
-            wdsmap: {}
+            wdsmap: {},
+            loading: true
         }
     });
     let hotv = new Vue({
@@ -83,7 +92,8 @@
         data: {
             curTag: '',
             hots: [],
-            hotsmap: {} 
+            hotsmap: {},
+            loading: true
         },
         methods:
         {
@@ -161,6 +171,7 @@
         query.limit(20);
         findItemsByQuery(POSTS, query, function(tname, results)
         {
+
             for(r in results)
             {
                 let wd={};
@@ -171,6 +182,7 @@
                 hotv.hotsmap[wd.id] = hotv.hots.length;
                 hotv.hots.push(wd);
             }
+            hotv.loading =false;
         },
         function(tname, err)
         {
@@ -201,6 +213,7 @@
                 cv.wdsmap[wd.id] = cv.wds.length;
                 cv.wds.push(wd);
             }
+            cv.loading = false;
         },
         function(tname, error)
         {

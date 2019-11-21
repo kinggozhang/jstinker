@@ -8,7 +8,9 @@
 
 <link rel="stylesheet" href="https://cdn.staticfile.org/simplemde/1.11.2/simplemde.min.css">
 <script src="https://cdn.staticfile.org/simplemde/1.11.2/simplemde.min.js"></script>
-
+<script src="./js/vue.min.js"></script>
+<script src="./js/av-min-3.15.0.js"></script>
+<script src="./js/table.js"></script>
 
 <style>
 html, body, h1, h2, h3, h4, h5 {font-family: "Open Sans", sans-serif}
@@ -20,10 +22,20 @@ width:100px;
 .imgview > li:hover{
  border: 2px solid red;
 }
+.TAInput {
+    width: 100%;
+    height: 400px;
+    overflow: auto;
+    word-break: break-all; //解决兼容问题
+}
 </style>
 
 <body>
 <div style="display:none;"><img src="./img/man2.jpg" alt=""></div>
+	<div id="sidebar" class="w3-sidebar" style="width:25%">
+		<h1>code review</h1>
+		<textarea  v-model="code"  style="height: 800px;"></textarea>
+	</div>
     <div class="w3-content w3-container">
 	<div class="w3-row">
 	<div class="w3-half w3-left-align">
@@ -50,7 +62,17 @@ width:100px;
 	<div class="w3-col l2">
 	<p id='indi'></p>
 	</div>
+
 	</div>
+
+	<div id="codeList" class="w3-container">
+	<button class="w3-button w3-green" v-on:click="getCodeList">代码管理</button>	<button class="w3-button w3-blue" v-on:click="uploadCode">upload code</button>
+	<ul class="w3-ul">
+		<li v-for="item in items" v-on:mouseover="sbv.code=item.code;" v-on:click="clickCodeId(item.id)">{{item.id}}</li>
+	</ul>
+	<textarea class="TAInput" v-show="load" v-model="newcode"></textarea>
+
+	</div>	
 	<div>
 	<textarea id="mdcontent"></textarea>
 	</div>
@@ -59,23 +81,99 @@ width:100px;
     </div>
 	</div>
 
-
-
-
-
-
-
-<script src="./js/av-min-3.0.4.js"></script>
-<script src="./js/table.js"></script>
 <script>
+initialize('rQJs4tIvgHSWk42RA1RL3rp-gzGzoHsz','WBa7JPv0mzaR7raBBCTRX8l');
+const POSTS = "wenda";
+const FILES = "_File";
+const CODES = "codes";
+
+	let sbv = new Vue({
+		el: '#sidebar',
+		data: {
+			code: ''
+		}
+	});
+	let cVue = new Vue({
+
+		el: '#codeList',
+		data: {
+			load: false,
+			newcode: '',
+			items: []			
+		},
+		methods:
+		{
+			clickCodeId: function(cid)
+			{
+				console.log("clicked "+cid);
+				let str = simplemde.value();
+
+				str += '<button class="w3-button" onclick="showDemoCode(';
+				str += cid;
+				str += ')">Demo code</button>\n';
+				simplemde.value(str);
+			},
+			getCodeList: function()
+			{
+			var query = new AV.Query(CODES);
+			//query.notEqualTo('code', '');
+			query.descending('createdAt');
+			query.limit(10);
+		    findItemsByQuery(CODES, query,
+		    	function(table, results)
+				{
+				  
+				  cVue.items =[];
+				  for(let i=0;i<results.length;i++)
+				  {
+				  	let c={};
+				  	c.id = results[i].id;
+				  	c.code = results[i].get('code');
+				  	cVue.items.push(c);
+				  }
+				},
+				function(table, error)
+				{
+					console.log(error);
+				},['code']);
+			},
+			uploadCode: function()
+			{
+				if(!this.load)
+				{
+					this.load = true;
+				}
+				else
+				{
+					if(this.newcode.length > 0)
+					{
+						let data ={};
+						data.code = this.newcode;
+						createTableItem(CODES, data,function(table, obj){
+							let c={};
+						  	c.id = obj.id;
+						  	c.code = cVue.newcode;
+						  	cVue.items.push(c);
+						  	cVue.newcode='';
+						},
+						function(tname,obj, error){
+							console.log(error);
+						});
+					}
+					else
+					{
+						this.load= false;
+					}
+				}
+			}
+		}
+	});
 	var simplemde = new SimpleMDE({
 		element: document.getElementById("mdcontent"),
 		spellChecker: false,
 	});
 	//SimpleMDE.toggleSideBySide();
-initialize('hqD9IMTNsFSk2LxbiFnBEvCp-gzGzoHsz','ITs4Ni1EiEI5sEcQQ4CBJqpb');
-const POSTS = "wenda";
-const FILES = "_File";
+
 var g_postid = getParameter("postid");
 var g_postobj;
 if(!currentUser())

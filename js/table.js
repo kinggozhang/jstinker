@@ -3,7 +3,7 @@ var g_rid = 1;
 var tableClasses={};
 var requestData={type:"",data:"",result:""};
 var requests={};
-var appIdKey={appId:'2a4bKP0e9Gw28Q3moW30YzK3-gzGzoHsz', appKey:'i7loDJ18a49onwsfMH876uCf', serverURLs: 'https://avoscloud.com'};
+var appIdKey={appId:'3SU3NFnWRerFaQFBIiMsRuta-gzGzoHsz', appKey:'zI1dqx2jIXoshpDKl4X5iXeK', serverURLs: 'https://avoscloud.com'};
 function initialize(id, key)
 {
 	var appIdkey={appId:id, appKey:key};
