@@ -347,3 +347,8 @@ function createTableItem(tablename, data, onSuccess, onError,aclReadUsers=[],acl
 			return query.substring(iStart);//获取单个参数的参数值
 		return query.substring(iStart, iEnd);//获取第二个参数的值
 	}
+function showDemoCode(cid)
+{ 
+    let turl = "http://www.sumoon.com/htmleditor.html?cid="+cid;
+    window.open(turl, 'demo');
+}

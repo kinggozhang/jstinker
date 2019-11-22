@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create a new tinker - JSTinker</title>
+    <title>demo实例代码</title>
     
     <!-- Latest jQuery from Google CDN -->
     <script src="https://cdn.staticfile.org/jquery/2.1.3/jquery.min.js"></script>
@@ -52,8 +52,8 @@
         <div class="collapse navbar-collapse" id="toolbar">
             <ul class="nav navbar-nav">
                 <li id="btnSidebar" class="w3-hide-large"> <a href=""><span class="glyphicon glyphicon-option" aria-hidden="true"></span>Sidebar</a></li>
-                <li id="btnRun2"><a href=""><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Run</a></li>
-                <li id="btnTidyUp"><a href=""><span class="glyphicon glyphicon-flash" aria-hidden="true"></span> TidyUp</a></li>
+                <li id="btnRun2"><a href=""><span class="glyphicon glyphicon-play" aria-hidden="true"></span> 运行</a></li>
+                <li id="btnTidyUp"><a href=""><span class="glyphicon glyphicon-flash" aria-hidden="true"></span>代码对齐</a></li>
   
             </ul>
         </div><!-- /.navbar-collapse -->
@@ -80,6 +80,8 @@
     </div>
     <!-- Set Editor Modes -->
     <script>
+    let cid = getParameter('cid');
+    
   initialize('hqD9IMTNsFSk2LxbiFnBEvCp-gzGzoHsz','ITs4Ni1EiEI5sEcQQ4CBJqpb');
   const CODES = "CODES";  
     
@@ -92,7 +94,10 @@
             enableBasicAutocompletion: true
         });
          var htmlvalue="";
-findItemsEqualTo(CODES, 'title', 'h1', 
+         if(cid.length > 0)
+         {
+         
+        findItemById(CODES, cid, 
             function(table, results)
             {         
              if(results.length > 0)
@@ -104,7 +109,7 @@ findItemsEqualTo(CODES, 'title', 'h1',
             {
             alert("发生错误：" + error.message);
             });
-        
+        };
    // RUN Button
     $("#btnRun2").click(function(event) {  
         event.preventDefault();
