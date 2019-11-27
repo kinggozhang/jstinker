@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<title>新建/修改文章</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./css/w3.css">
+<link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/5.2.0/css/fontawesome.min.css">
+
+<link rel="stylesheet" href="https://cdn.staticfile.org/simplemde/1.11.2/simplemde.min.css">
+<script src="https://cdn.staticfile.org/simplemde/1.11.2/simplemde.min.js"></script>
+
+
+<style>
+html, body, h1, h2, h3, h4, h5 {font-family: "Open Sans", sans-serif}
+.imgview > li{
+display:inline;
+height:100px;
+width:100px;
+}
+.imgview > li:hover{
+ border: 2px solid red;
+}
+</style>
+
+<body>
+<div style="display:none;"><img src="./img/man2.jpg" alt=""></div>
+    <div class="w3-content w3-container">
+	<div class="w3-row">
+	<div class="w3-half w3-left-align">
+	<h2 class="w3-leftbar w3-border-blue" id="htitle">新建文章</h2>
+	</div>
+	<div class="w3-half w3-right-align">
+	<a href="#" class="w3-medium w3-text-blue" onclick="logout(this)" id="whoami">whoami</a>
+	</div>
+	</div>
+	<input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="输入标题" id="title" required>
+	<input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="永久链接" id="permlink" required>
+	<input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="输入标签。多个标签使用|间隔" id="tags" required>
+	<input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="输入目录。多个目录使用|间隔" id="cates" required>
+    <div>
+	<ul class="imgview" id="imgViewer"></ul>
+	<div class="w3-row">
+	<div class="w3-col l3">
+	<button class="w3-button w3-green" id="fileMgrBtn" onclick="fileManager(this)">资源管理</button>
+	<a href="uploadfile.html">上传文件</a>
+	</div>
+	<div class="w3-col l7">
+	<input class="w3-input" type="text" id="imgurl" readonly="true" ></input>
+	</div>
+	<div class="w3-col l2">
+	<p id='indi'></p>
+	</div>
+	</div>
+	<div>
+	<textarea id="mdcontent"></textarea>
+	</div>
+	<div class="w3-container">
+	  <button class="w3-button w3-green w3-section w3-padding" id="addpostbtn" onclick="onAddPost(this)">确定</button>
+    </div>
+	</div>
+<script src="./js/vue.min.js"></script>
+<script src="./js/av-min-3.0.4.js"></script>
+<script src="./js/table.js"></script>
+<script>
+	var simplemde = new SimpleMDE({
+		element: document.getElementById("mdcontent"),
+		spellChecker: false,
+	});
+	//SimpleMDE.toggleSideBySide();
+initialize('hqD9IMTNsFSk2LxbiFnBEvCp-gzGzoHsz','ITs4Ni1EiEI5sEcQQ4CBJqpb');
+const POSTS = "NEWPOSTS";
+const FILES = "_File";
+var g_postid = getParameter("postid");
+var g_postobj;
+if(!currentUser())
+{
+   window.location.href="login.html";
+}
+else
+{
+	ele('whoami').innerText = currentUser().getUsername();
+   if(g_postid)
+   {
+      fetchPost(g_postid);
+   }
+}
+function logout(e)
+{
+  if(confirm("Log out "+currentUser().getUsername() + "?"))
+  {
+      AV.User.logOut();
+	  window.location.href="login.html";
+  }
+}
+function clickImg(e)
+{
+ele('imgurl').value = e.src;
+ele('imgurl').select();
+document.execCommand('copy');
+ele('indi').innerText="已复制";
+}
+function  fileManager(e)
+{
+    var query = new AV.Query(FILES);
+	query.startsWith('mime_type', 'image');
+    findItemsByQuery(FILES, query,
+				function(table, results)
+				{
+				  var imghtml="";
+				  for(let i=0;i<results.length;i++)
+				  {
+				     imghtml += '<li><img onclick="clickImg(this)" class="w3-image" src="';
+					 imghtml += results[i].get('url');
+					 imghtml += '" alt="';
+					 imghtml += results[i].get('name');
+					 imghtml += '" style="width:100%;max-width:60px"></li>';
+				  }
+				  console.log(imghtml);
+				  ele("imgViewer").innerHTML=imghtml;
+				   console.log(results.length);
+				},
+				function(table, error)
+				{
+				},['url']);
+}
+function  fetchPost(postid)
+{
+   findItemById(POSTS, postid,
+          function(table,obj)
+		  {
+		  g_postobj = obj;
+		  ele("title").value = obj.get("title");
+		  ele("permlink").value = obj.get("permlink");
+		  ele("tags").value = obj.get("tags").join('|');
+		  ele("cates").value =obj.get("cates").join('|');
+		  simplemde.value(obj.get("mdcontent"));
+		  ele("addpostbtn").innerText = "更新";
+		  ele("htitle").innerText = "修改文章";
+		 //var result = md.render(obj.get("mdcontent"));
+		  },
+		  function(table,obj,error)
+		  {
+          console.log(error);
+		  });
+}
+function updatePost(postid,title,permlink,tags,cates,content)
+{
+    var updateData={};
+    if(title != g_postobj.get("title"))
+	    updateData["title"]=title;
+    if(tags != g_postobj.get("tags"))
+	    updateData["tags"]=tags.split('|');
+	if(cates != g_postobj.get("cates"))
+        updateData["cates"]=cates.split('|');
+    if(permlink != g_postobj.get("permlink"))
+        updateData["permlink"]=permlink;
+	if(content != g_postobj.get("mdcontent"))
+        updateData["mdcontent"]=content;
+		
+	updateTableItem(POSTS,postid, updateData, 
+			function(tablename, obj)
+			{
+				alert("文章修改成功");
+			},
+			function(tablename,obj, error)
+			{
+				alert("修改失败:" + error.message);
+			});
+}
+function onAddPost(e)
+{
+	if(!ele("title").value)
+	   return;
+	var ta = ele("mdcontent");
+	if(g_postid)
+	{   
+	updatePost(g_postid,ele("title").value, ele("permlink").value, ele("tags").value, ele("cates").value,simplemde.value());
+	}
+	else
+    {   
+	addNewPost(ele("title").value, ele("permlink").value, currentUser().getUsername(), ele("tags").value, ele("cates").value,simplemde.value());
+	}
+}
+function addNewPost(title,permlink, author,tags,cates, content)
+{
+  var data= {"title":title,"permlink":permlink, "author":author, "tags":tags.split('|'), "cates":cates.split('|'), "mdcontent":content, "mode":1};
+  createTableItem(POSTS, data, 
+				function(table, obj)
+				{
+					alert("新文章发表成功");
+					ele("title").value="";
+					ele("permlink").value="";
+					ele("tags").value="";
+					ele("cates").value="";
+					ele("mdcontent").value="";
+				},
+				function(table, error)
+				{
+				    alert("发生错误:" + error.message);
+				},[],[currentUser().id]);
+				
+				
+}
+</script>
+
+</body>
+</html> 
