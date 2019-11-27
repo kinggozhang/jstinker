@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<title>新建/修改文章</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./css/w3.css">
+<link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/5.2.0/css/fontawesome.min.css">
+
+
+<style>
+
+</style>
+
+<body>
+
+    <div id="commentarea" class="w3-content w3-container w3-padding-16">
+    <div class=" w3-row-padding">
+        <div class="w3-half">
+        <input class="w3-input  w3-border" type="text" v-model="nickname" placeholder="昵称">
+        </div>
+        <div class="w3-half">
+        <p v-show="replyto.length>0">回复 {{replyto}}</p>
+        </div>
+    </div>
+	<textarea class="w3-margin-top" style="width:100%;height:200px;" placeholder="文明评论" v-model="newcomment"></textarea>
+	
+    <div class="w3-container w3-row-padding">
+      <div class="w3-third">
+         <button class="w3-button w3-green w3-right" id="addpostbtn" v-on:click="onGetVerifyCode">{{verifycode}}</button>
+      </div>
+      <div class="w3-third">
+        <input class="w3-input w3-border" type="text" placeholder="输入验证码" v-model="uservc">
+      </div>
+      <div class="w3-third">
+        <button class="w3-button w3-green" id="addpostbtn" v-on:click="onOk">确定</button>
+      </div>      
+    </div>
+    <p class="w3-red">{{info}}</p>
+	</div>
+<script src="./js/vue.min.js"></script>
+<script src="./js/av-min-3.0.4.js"></script>
+<script src="./js/table.js"></script>
+<script>
+
+let cv = new Vue({
+
+    el: '#commentarea',
+    data: {
+       nickname:'',
+       newcomment:'',
+       verifycode:'请求验证码',
+       uservc:'',
+       info:'',
+       replyto:'',
+       comments:[]
+    },
+    methods:
+    {
+        onGetVerifyCode:function()
+        {
+            console.log(new Date().getTime());
+            let time = new Date().getTime();
+            this.verifycode = (''+time).slice(-4);
+        },
+        onOk:function()
+        {
+            if(this.nickname.length <= 0)
+            {
+               this.info="昵称不能为空";
+            }
+            else if(this.newcomment.length <= 0)
+            {
+                this.info="评论不能为空";
+            }
+            else if(this.uservc != this.verifycode)
+            {
+               this.info="验证码不正确";
+               this.onGetVerifyCode();
+            }
+            else 
+            {
+                this.info='';
+                this.uservc='';                  
+                addComment(this.nickname,this.newcomment,this.replyto);
+            }
+        }
+    }
+ });
+	//SimpleMDE.toggleSideBySide();
+initialize('hqD9IMTNsFSk2LxbiFnBEvCp-gzGzoHsz','ITs4Ni1EiEI5sEcQQ4CBJqpb');
+const POSTS = "comments";
+const FILES = "_File";
+
+function addComment(nickname, comments,replyto)
+{
+  var data= {"nick":nickname,"comments":comments, "replyto":replyto};
+  createTableItem(comments, data, 
+				function(table, obj)
+				{
+					alert("新文章发表成功");
+                    cv.nickname='';
+                    cv.newcomment='';
+                    cv.info="感谢您的评论，请等待审核。。。";
+                     
+				},
+				function(table, error)
+				{
+				    alert("发生错误:" + error.message);
+				},[],[]);
+				
+}
+function  fetchPost(postid)
+{
+   findItemById(POSTS, postid,
+          function(table,obj)
+		  {
+		  g_postobj = obj;
+		  ele("title").value = obj.get("title");
+		  ele("permlink").value = obj.get("permlink");
+		  ele("tags").value = obj.get("tags").join('|');
+		  ele("cates").value =obj.get("cates").join('|');
+		  simplemde.value(obj.get("mdcontent"));
+		  ele("addpostbtn").innerText = "更新";
+		  ele("htitle").innerText = "修改文章";
+		 //var result = md.render(obj.get("mdcontent"));
+		  },
+		  function(table,obj,error)
+		  {
+          console.log(error);
+		  });
+}
+function updatePost(postid,title,permlink,tags,cates,content)
+{
+    var updateData={};
+    if(title != g_postobj.get("title"))
+	    updateData["title"]=title;
+    if(tags != g_postobj.get("tags"))
+	    updateData["tags"]=tags.split('|');
+	if(cates != g_postobj.get("cates"))
+        updateData["cates"]=cates.split('|');
+    if(permlink != g_postobj.get("permlink"))
+        updateData["permlink"]=permlink;
+	if(content != g_postobj.get("mdcontent"))
+        updateData["mdcontent"]=content;
+		
+	updateTableItem(POSTS,postid, updateData, 
+			function(tablename, obj)
+			{
+				alert("文章修改成功");
+			},
+			function(tablename,obj, error)
+			{
+				alert("修改失败:" + error.message);
+			});
+}
+function onAddPost(e)
+{
+	if(!ele("title").value)
+	   return;
+	var ta = ele("mdcontent");
+	if(g_postid)
+	{   
+	updatePost(g_postid,ele("title").value, ele("permlink").value, ele("tags").value, ele("cates").value,simplemde.value());
+	}
+	else
+    {   
+	addNewPost(ele("title").value, ele("permlink").value, currentUser().getUsername(), ele("tags").value, ele("cates").value,simplemde.value());
+	}
+}
+function addNewPost(title,permlink, author,tags,cates, content)
+{
+  var data= {"title":title,"permlink":permlink, "author":author, "tags":tags.split('|'), "cates":cates.split('|'), "mdcontent":content, "mode":1};
+  createTableItem(POSTS, data, 
+				function(table, obj)
+				{
+					alert("新文章发表成功");
+					ele("title").value="";
+					ele("permlink").value="";
+					ele("tags").value="";
+					ele("cates").value="";
+					ele("mdcontent").value="";
+				},
+				function(table, error)
+				{
+				    alert("发生错误:" + error.message);
+				},[],[currentUser().id]);
+				
+				
+}
+</script>
+
+</body>
+</html> 
