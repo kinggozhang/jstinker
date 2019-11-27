@@ -108,9 +108,9 @@ const CODES = "codes";
 				console.log("clicked "+cid);
 				let str = simplemde.value();
 
-				str += '<button class="w3-button" onclick="showDemoCode(';
+				str += '<button class="w3-button" onclick="showDemoCode(\'';
 				str += cid;
-				str += ')">Demo code</button>\n';
+				str += '\')">Demo code</button>\n';
 				simplemde.value(str);
 			},
 			getCodeList: function()
@@ -286,7 +286,7 @@ function onAddPost(e)
 }
 function addNewPost(title,permlink, author,tags,cates, content)
 {
-  var data= {"title":title,"permlink":permlink, "author":author, "tags":tags, "mdcontent":content, "mode":"dynamic"};
+  var data= {"title":title,"permlink":permlink, "author":author, "likes":0,"tags":tags, "mdcontent":content, "mode":"dynamic"};
   createTableItem(POSTS, data, 
 				function(table, obj)
 				{
