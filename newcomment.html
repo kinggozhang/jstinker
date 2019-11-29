@@ -36,6 +36,11 @@
       </div>      
     </div>
     <p class="w3-red">{{info}}</p>
+    <div class="w3-container">
+    <ul class="w3-ul w3-border-top">
+    <li class="w3-border-bottom" v-for="c in comments"><span><a href='javascript:void(0)' v-on:click="onReplyTo(c.nickname)"> {{c.nickname}}</a></span><span v-show='c.replyto.length>0'>回复给 {{c.replyto}}</span><p>{{c.comment}}</p></li>
+    </ul>
+    </div>
 	</div>
 <script src="./js/vue.min.js"></script>
 <script src="./js/av-min-3.0.4.js"></script>
@@ -52,10 +57,17 @@ let cv = new Vue({
        uservc:'',
        info:'',
        replyto:'',
-       comments:[]
+       comments:[
+       {nickname:'nick1',
+       replyto:'ni2',
+       comment:'coment1'}]
     },
     methods:
     {
+        onReplyTo: function(rtNick)
+        {
+            this.replyto = rtNick;
+        },
         onGetVerifyCode:function()
         {
             console.log(new Date().getTime());
@@ -93,11 +105,12 @@ const FILES = "_File";
 
 function addComment(nickname, comments,replyto)
 {
-  var data= {"nick":nickname,"comments":comments, "replyto":replyto};
-  createTableItem(comments, data, 
+  let pathname = window.location.pathname;
+  
+  var data= {"nick":nickname,"comment":comments, "replyto":replyto, "url":pathname};
+  createTableItem(POSTS, data, 
 				function(table, obj)
-				{
-					alert("新文章发表成功");
+				{					
                     cv.nickname='';
                     cv.newcomment='';
                     cv.info="感谢您的评论，请等待审核。。。";
@@ -108,6 +121,21 @@ function addComment(nickname, comments,replyto)
 				    alert("发生错误:" + error.message);
 				},[],[]);
 				
+}
+function  fetchPosts()
+{
+   let pathname = window.location.pathname;
+   findItemsEqualTo(POSTS,'url', pathname, function(tname, results)
+   {
+       for(let i=0;i<results.length;i++)
+       {
+          let cm = {};
+          cm.nickname = results[i].get('nick');
+          cm.comment = results[i].get('comment');
+          cm.replyto = results[i].get('replyto');
+          cv.comments.push(cm);
+       }
+   })
 }
 function  fetchPost(postid)
 {
