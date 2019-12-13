@@ -1,0 +1,453 @@
+<html>
+<title>易错字错别字大挑战</title>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./css/w3.css">
+<script src="./js/av-min-3.0.4.js"></script>
+<script src="./js/table.js"></script>
+<script src="./js/vue.min.js"></script>
+<body onkeydown="keyDown(event)">
+<div class="w3-container w3-content">
+ <div class="w3-row">
+  <div class="w3-container w3-twothird">
+     <div id='testContainer' class="w3-card-4" style="width:100%">
+         <div class="w3-row">
+          <div class="w3-half w3-container w3-indigo">
+            <h3 v-show="stage>1">余时:{{timeLeft}}/奖罚:{{timeBonus}}</h3>
+            <h3 v-show="stage<2">{{info}}<h3>
+          </div>
+          <div class="w3-half w3-container w3-center w3-light-blue">            
+            <h3 v-show="stage>1 ">答对:{{ccount}}/总数:{{total}}</h3>
+            <button class="w3-button w3-blue w3-padding-16" v-show="stage==1" v-on:click="onClickStart">开始挑战</button>
+          </div>
+        </div>
+        <div v-show="stage<2"> 
+            <h2 class="w3-center">规则</h2>
+            <p>
+            请检查给出的汉字词组是否包含错别字，并用鼠标或者快捷键（A,F)作答。</p>
+            <p>初始答题时间为{{INITSECONDS}}秒，每次回答正确，可以额外获得{{BONUSSECONDS}}秒答题时间;回答错误则会减去{{BONUSSECONDS*2}}秒答题时间。</p>
+            <p>排名规则：1:答对题目数量 2:正确率 3:作答时间。</p>
+            
+        </div>
+        <div v-show="stage==2" class="w3-container w3-center">
+ 
+          <h1 class="w3-jumbo">{{ask}}</h1>
+          
+
+          <div class="w3-section">
+            <button class="w3-button w3-green w3-xlarge" v-on:click="onClickCorrect">正确(A)</button>
+ 
+            <button class="w3-button w3-red w3-xlarge" v-on:click="onClickWrong">错误(F)</button>
+            
+          </div>
+     
+        </div>
+          <div v-show="stage==3" class="w3-container w3-center">
+            <h2 class="w3-center">挑战结束</h2>
+            <p>答对{{ccount}}题，正确率: {{Math.round(ccount*10000/total)/100}}% </p>
+            <button class="w3-button w3-green w3-xlarge" v-show="goodenough" v-on:click="onClickCommit">提交成绩</button>
+            <button class="w3-button w3-green w3-xlarge" v-on:click="onClickRestart">再来一次</button>
+            <button class="w3-button w3-red w3-xlarge" v-on:click="onClickReport">查看报告</button>
+            
+          </div>             
+      </div>
+  </div>
+  <div id="ranklist" class="w3-container w3-third">
+    <h2>排行榜</h2>
+    <ul class="w3-ul w3-border">
+      <li v-for="r in ranks"><span class="w3-bold w3-text-red">{{r.rank}}.</span>{{r.name}}({{r.ccount}}/{{r.rate}}%)</li>
+    </ul>
+  </div>
+
+</div> 
+  <div class="w3-container" id="reports">
+    <table v-show="showReport && rVue.stage>2" class="w3-table-all w3-hoverable">
+    <tr class="w3-blue">
+      <th>题目</th>
+      <th>提示</th>
+      <th>你的回答</th>
+    </tr>
+    <tr v-for="r in results" v-show="!r.result"><td>{{r.ask}}</td><td>{{r.answer}}</td><td>{{r.user}}</td></tr>
+    </table>
+  </div>
+  
+  <div id="id01" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:400px">
+
+      <div class="w3-center"><br>
+        <h3>提交成绩</h3><span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>        
+      </div>
+
+ 
+        <div class="w3-container">
+          
+          <input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter Username" v-model="username" required>
+
+          <button class="w3-button w3-block w3-green w3-section w3-padding" v-on:click="onCommit">提交</button>
+        </div>
+    </div>  
+  </div> 
+</div>
+<script>
+const ROWSPERFETCH=50;
+const INITSECONDS=100;
+const BONUSSECONDS=5;
+const RANKS=20;
+let rawData=[];
+let g_idx =0;
+let g_timer_id=0;
+let g_fetching =0;
+initialize('hqD9IMTNsFSk2LxbiFnBEvCp-gzGzoHsz','ITs4Ni1EiEI5sEcQQ4CBJqpb');
+var lastCreateAt = null;
+fetchYcz();
+fetchRanks();
+function fetchYcz()
+{
+    if(g_fetching)
+    {
+    console.log('fetching is ongoing...');
+    return;
+    }
+
+    g_fetching = 1;
+    var query = new AV.Query('yicuozi');
+    query.limit(ROWSPERFETCH);//default is 100.max is 1000;
+    query.ascending('createdAt'); //
+    if(lastCreateAt)
+    {
+       query.greaterThan('createdAt', lastCreateAt);
+    }
+    query.find().then(function (data) {
+        for(let i=0;i<data.length;i++)
+        {
+            let ycData = {};
+            ycData.cuo = data[i].get('cuo');
+            ycData.dui = data[i].get('dui');
+            ycData.idx = data[i].get('idx');
+            if(i==19)
+            lastCreateAt = data[i].get('createdAt');
+            
+            rawData.push(ycData);
+        }
+        tVue.lastFetch = data.length;
+        tVue.totalFetch += data.length;
+        if(tVue.stage == 0)
+        {
+        tVue.stage = 1;
+        tVue.info="数据准备完毕";
+        }
+
+        g_fetching = 0;
+    }, function(error){g_fetching = 0;console.log(error);});
+}
+function fetchRanks()
+{
+    var query = new AV.Query('yczscores');
+    query.limit(RANKS);//default is 100.max is 1000;
+
+    query.addDescending('ccount');
+    query.addDescending('rate');    
+    query.addAscending('createdAt'); //
+
+    query.find().then(function (data) {
+        rankVue.ranks=[];
+        for(let i=0;i<data.length;i++)
+        {
+            let rData = {};
+            rData.rank = i+1;
+            rData.name = data[i].get('username');
+            rData.ccount = data[i].get('ccount');
+            rData.rate = data[i].get('rate')/100;
+            if(i == (RANKS-1))
+            {    
+            rankVue.lastR = rData.ccount;
+            }
+            rankVue.ranks.push(rData);
+        }
+    }, function(error){g_fetching = 0;console.log(error);});
+}
+let rankVue = new Vue({
+    el:'#ranklist',
+    data:{
+        lastR:0,
+        ranks:[]
+    }
+});
+let cVue = new Vue({
+    el:'#id01',
+    data: {
+        username:'',
+    },
+    methods:{
+        onCommit:function()
+        {
+            if(this.username.length <=0 )
+            {
+                alert("大神，请留名");
+                return;
+            }
+           commitScore(); 
+        }
+    }
+});
+
+let rVue = new Vue({
+    el:'#reports',
+    data: {
+       showReport:false,
+       results:[]
+    }
+});
+let tVue = new Vue({
+    el:'#testContainer',
+    data:{
+        info:'正在准备数据',
+        ask:'',
+        expect:false,
+        result:false,
+        mdui:'', //valid only for expect:false
+        timeLeft:INITSECONDS,
+        timeBonus:0,
+        startTime:0,
+        endTime:0,
+        ccount:0,
+        total:0,
+        goodenough:false,
+        stage:0,
+        lastFetch:0,
+        totalFetch:0,
+    },
+    methods:
+    {
+        onClickCommit:function()
+        {
+            document.getElementById('id01').style.display='block';
+        },
+        onClickReport:function()
+        {
+           rVue.showReport=true;   
+        },
+        onClickRestart:function()
+        {
+            this.stage = 2;
+            g_idx = 0;
+            this.results=[];
+            this.timeLeft = INITSECONDS;
+            this.timeBonus = 0;
+            this.ccount =0;
+            this.total =0;
+            testNext();
+            
+            updateTimeLeft();
+        },
+        onClickCorrect:function()
+        {   
+            if(this.stage<1)
+            {
+                alert("正在请求数据...请确认网络正常。");
+                return;
+            }
+            this.result = (true == this.expect);
+            if(this.result)
+            {
+            this.ccount ++;
+            this.timeLeft += BONUSSECONDS;
+            this.timeBonus += BONUSSECONDS;
+            }
+            else
+            {
+            this.timeLeft -= BONUSSECONDS*2;
+            this.timeBonus -= BONUSSECONDS*2;
+            }
+            this.goodenough = (this.ccount*100/this.total) > 75;
+            saveResult(this.ask, this.mdui, this.result);
+            if(this.timeLeft > 0)
+            {
+                testNext();
+            }
+            else
+            {
+                this.timeout();
+            }
+            
+        },
+        onClickWrong:function()
+        {
+            if(this.stage<1)
+            {
+                alert("正在请求数据...请确认网络正常。");
+                return;
+            }
+            this.result = (false == this.expect);
+            saveResult(this.ask, this.mdui, this.result);
+            
+            if(this.result)
+            {
+            this.ccount ++;
+            this.timeLeft += BONUSSECONDS;
+            this.timeBonus += BONUSSECONDS;
+            }            
+            else
+            {
+            this.timeLeft -= BONUSSECONDS*2;
+            this.timeBonus -= BONUSSECONDS*2;
+            }
+            this.goodenough = (this.ccount*100/this.total) > 75;
+            if(this.timeLeft > 0)
+            {
+                testNext();
+            }
+            else
+            {
+            this.timeout();
+            }            
+        },
+        onClickStart:function()
+        {
+            if(this.stage<1)
+            {
+                alert("正在请求数据...请确认网络正常。");
+                return;
+            }
+            this.startTime = new Date().getTime();
+            this.stage = 2;
+            testNext();
+            updateTimeLeft();
+        },
+        timeout:function()
+        {
+            this.stage = 3;
+            this.endTime = new Date().getTime();
+        }
+    }
+});
+function commitScore()
+{
+  var data= {"username":cVue.username.substr(0,10), "ccount":tVue.ccount,"total":tVue.total, "rate":Math.round(tVue.ccount*10000/tVue.total), "stime":tVue.startTime, "etime":tVue.endTime};
+  createTableItem('yczscores', data, 
+				function(table, obj)
+				{	
+                    document.getElementById('id01').style.display='none';
+                    if(tVue.ccount >= rankVue.lastR)
+                    {
+                        fetchRanks();
+                    }
+				},
+				function(table, error)
+				{
+                    alert('提交失败:'+error);
+				},[],[]);
+}
+function saveResult(ask,mdui,result)
+{   
+    let sresult = result?'正确':'错误';
+    if(mdui == ask)
+    {
+        mdui = '-';
+    }
+    else
+    {
+       mdui = ('应为:'+mdui);
+    }
+   rVue.results.push({ask:ask, answer:mdui, user:sresult,result:result});
+}
+function keyDown(e)
+{
+    if(tVue.stage == 2)
+    {
+        if(e.code=='KeyA')
+        {
+           tVue.onClickCorrect(); 
+        }
+        else if(e.code == 'KeyF')
+        {
+           tVue.onClickWrong();
+        }
+    }
+}
+//get modified correct words
+function getMDui(ycData)
+{
+    let askArr = ycData.cuo.split('');
+    let idxs = ycData.idx.split('|');
+    let dui = 0;
+    for(let i=0;i<idxs.length;i++)
+    {
+      let idx = Number(idxs[i]);
+      if(i+1>ycData.dui.length)
+        askArr[idx-1] = ycData.dui[0];
+      else
+        askArr[idx-1] = ycData.dui[i];
+    }
+    ycData.mdui = askArr.join('');
+    return ycData.mdui;
+}
+function generateAsk(ycData)
+{
+    let ask='';
+   let time = new Date().getTime();
+   if(time%2 == 0)
+   {
+      ask = ycData.cuo;
+      ycData.expect = false;
+      getMDui(ycData);  
+   }
+   else
+   {
+      ask = getMDui(ycData);      
+      ycData.expect = true;
+   }
+   ycData.ask = ask;
+   
+   return ask;
+}
+function testNext()
+{
+    if(g_idx >= rawData.length)
+    {
+    console.log("idx is out of range.");
+    tVue.timeout();
+    return;
+    }
+    if(tVue.stage == 3)
+    {
+    console.log('timeout');
+    return;
+    }
+    //clearTimeout(g_timer_id);
+    //showTest;
+    tVue.total ++; 
+    
+    tVue.ask = generateAsk(rawData[g_idx]);
+    tVue.expect = rawData[g_idx].expect;
+    tVue.mdui = rawData[g_idx].mdui;
+    //g_timer_id = setTimeout("updateTimeLeft()",1000); 
+    g_idx ++;
+    if(rawData.length - g_idx < 10 && tVue.lastFetch == ROWSPERFETCH )
+    {
+       fetchYcz();       
+    }
+    
+        
+}
+function updateTimeLeft()
+{
+    tVue.timeLeft --;
+    if(tVue.timeLeft <= 0)
+    {
+        //game over;
+        tVue.timeout();
+        clearTimeout(g_timer_id);
+       
+    }
+    else
+    {
+    g_timer_id = setTimeout("updateTimeLeft()",1000);
+    }
+}
+</script>
+
+</body>
+</html>
+ 
